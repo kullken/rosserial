@@ -2,11 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(rosserial_windows)
 
 find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
-  nav_msgs
   rosserial_client
-  sensor_msgs
-  std_msgs
 )
 catkin_package(CATKIN_DEPENDS)
 
