@@ -311,7 +311,7 @@ class RosSerialServer:
             if chunk == '':
                 raise RuntimeError("RosSerialServer.inWaiting() socket connection broken")
             return len(chunk)
-        except socket.error, e:
+        except socket.error as e:
             if e.args[0] == errno.EWOULDBLOCK:
                 return 0
             raise
@@ -437,6 +437,7 @@ class SerialClient(object):
                     bytes_remaining -= len(received)
 
             if bytes_remaining != 0:
+                rospy.logwarn("Timeout [{}s] reached in tryRead().".format(self.timeout))
                 raise IOError("Returned short (expected %d bytes, received %d instead)." % (length, length - bytes_remaining))
 
             return bytes(result)
@@ -508,8 +509,8 @@ class SerialClient(object):
 
                 # Validate message length checksum.
                 if msg_len_checksum % 256 != 255:
-                    rospy.loginfo("wrong checksum for msg length, length %d" %(msg_length))
-                    rospy.loginfo("chk is %d" % ord(msg_len_chk))
+                    rospy.logwarn("wrong checksum for msg length, length %d" %(msg_length))
+                    rospy.logwarn("chk is %d" % ord(msg_len_chk))
                     continue
 
                 # Read topic id (2 bytes)
@@ -523,8 +524,8 @@ class SerialClient(object):
                     msg = self.tryRead(msg_length)
                 except IOError:
                     self.sendDiagnostics(diagnostic_msgs.msg.DiagnosticStatus.ERROR, ERROR_PACKET_FAILED)
-                    rospy.loginfo("Packet Failed :  Failed to read msg data")
-                    rospy.loginfo("expected msg length is %d", msg_length)
+                    rospy.logwarn("Packet Failed :  Failed to read msg data")
+                    rospy.logwarn("expected msg length is %d", msg_length)
                     raise
 
                 # Reada checksum for topic id and msg
@@ -543,7 +544,7 @@ class SerialClient(object):
                         self.requestTopics()
                     rospy.sleep(0.001)
                 else:
-                    rospy.loginfo("wrong checksum for topic id and msg")
+                    rospy.logwarn("wrong checksum for topic id and msg")
 
             except IOError as exc:
                 rospy.logwarn('Last read step: %s' % read_step)
@@ -575,7 +576,7 @@ class SerialClient(object):
             self.publishers[msg.topic_id] = pub
             self.callbacks[msg.topic_id] = pub.handlePacket
             self.setPublishSize(msg.buffer_size)
-            rospy.loginfo("Setup publisher on %s [%s]" % (msg.topic_name, msg.message_type) )
+            rospy.loginfo("Setup publisher on %s [type: %s] [id: %s]" % (msg.topic_name, msg.message_type, msg.topic_id) )
         except Exception as e:
             rospy.logerr("Creation of publisher failed: %s", e)
 
@@ -588,7 +589,7 @@ class SerialClient(object):
                 sub = Subscriber(msg, self)
                 self.subscribers[msg.topic_name] = sub
                 self.setSubscribeSize(msg.buffer_size)
-                rospy.loginfo("Setup subscriber on %s [%s]" % (msg.topic_name, msg.message_type) )
+                rospy.loginfo("Setup subscriber on %s [type: %s] [id: %s]" % (msg.topic_name, msg.message_type, msg.topic_id) )
             elif msg.message_type != self.subscribers[msg.topic_name].message._type:
                 old_message_type = self.subscribers[msg.topic_name].message._type
                 self.subscribers[msg.topic_name].unregister()
