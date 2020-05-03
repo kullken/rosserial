@@ -368,6 +368,10 @@ public:
   /********************************************************************
    * Time functions
    */
+  uint32_t get_last_sync_receive_time() const
+  {
+    return last_sync_receive_time;
+  }
 
   void requestSyncTime()
   {
