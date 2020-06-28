@@ -77,6 +77,11 @@ public:
   static void setNow(Time & new_now);
 };
 
+Time operator+(const Time& lhs, const Duration& rhs);
+Time operator-(const Time& lhs, const Duration& rhs);
+
+bool operator<(const Time& lhs, const Time& rhs);
+
 }
 
 #endif
