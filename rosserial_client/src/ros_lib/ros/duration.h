@@ -41,32 +41,70 @@
 namespace ros
 {
 
-void normalizeSecNSecSigned(int32_t& sec, int32_t& nsec);
+constexpr void normalizeSecNSecSigned(int32_t &sec, int32_t &nsec)
+{
+  int32_t nsec_part = nsec;
+  int32_t sec_part = sec;
+
+  while (nsec_part > 1000000000L)
+  {
+    nsec_part -= 1000000000L;
+    ++sec_part;
+  }
+  while (nsec_part < 0)
+  {
+    nsec_part += 1000000000L;
+    --sec_part;
+  }
+  sec = sec_part;
+  nsec = nsec_part;
+}
 
 class Duration
 {
 public:
   int32_t sec, nsec;
 
-  Duration() : sec(0), nsec(0) {}
-  Duration(int32_t _sec, int32_t _nsec) : sec(_sec), nsec(_nsec)
+  constexpr Duration() : sec(0), nsec(0) {}
+  constexpr Duration(int32_t _sec, int32_t _nsec) : sec(_sec), nsec(_nsec)
   {
     normalizeSecNSecSigned(sec, nsec);
   }
 
-  double toSec() const
+  constexpr double toSec() const
   {
     return (double)sec + 1e-9 * (double)nsec;
   };
-  void fromSec(double t)
+
+  constexpr void fromSec(double t)
   {
     sec = (uint32_t) floor(t);
     nsec = (uint32_t) round((t - sec) * 1e9);
   };
 
-  Duration& operator+=(const Duration &rhs);
-  Duration& operator-=(const Duration &rhs);
-  Duration& operator*=(double scale);
+  constexpr Duration& operator+=(const Duration &rhs)
+  {
+    sec += rhs.sec;
+    nsec += rhs.nsec;
+    normalizeSecNSecSigned(sec, nsec);
+    return *this;
+  }
+
+  constexpr Duration& operator-=(const Duration &rhs)
+  {
+    sec += -rhs.sec;
+    nsec += -rhs.nsec;
+    normalizeSecNSecSigned(sec, nsec);
+    return *this;
+  }
+
+  constexpr Duration& operator*=(double scale)
+  {
+    sec *= scale;
+    nsec *= scale;
+    normalizeSecNSecSigned(sec, nsec);
+    return *this;
+  }
 };
 
 }
