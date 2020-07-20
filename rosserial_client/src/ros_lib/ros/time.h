@@ -54,9 +54,10 @@ constexpr void normalizeSecNSec(uint32_t &sec, uint32_t &nsec)
 class Time
 {
 public:
-  uint32_t sec, nsec;
+  uint32_t sec = 0;
+  uint32_t nsec = 0;
 
-  constexpr Time() : sec(0), nsec(0) {}
+  constexpr Time() = default;
   constexpr Time(uint32_t _sec, uint32_t _nsec) : sec(_sec), nsec(_nsec)
   {
     normalizeSecNSec(sec, nsec);

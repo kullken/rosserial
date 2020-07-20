@@ -63,9 +63,16 @@ constexpr void normalizeSecNSecSigned(int32_t &sec, int32_t &nsec)
 class Duration
 {
 public:
-  int32_t sec, nsec;
+  int32_t sec = 0;
+  int32_t nsec = 0;
 
-  constexpr Duration() : sec(0), nsec(0) {}
+  constexpr Duration() = default;
+
+  constexpr Duration(double _sec)
+  {
+    fromSec(_sec);
+  }
+
   constexpr Duration(int32_t _sec, int32_t _nsec) : sec(_sec), nsec(_nsec)
   {
     normalizeSecNSecSigned(sec, nsec);
